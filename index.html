@@ -223,10 +223,49 @@
     <div class="slide">
         <div class="slide-content">
             <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center whitespace-nowrap">"어? 제 컴퓨터에서는 문제 없이 잘 돌아가는데? 뭐지!"</h2>
+            
+            <!-- YouTube 임베드 (활성화) -->
+            <div class="w-full max-w-4xl mx-auto aspect-video rounded-lg shadow-2xl overflow-hidden">
+                <iframe 
+                    class="w-full h-full" 
+                    src="https://www.youtube.com/embed/b8NyhC-fn1U" 
+                    title="도커 문제 상황" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            
+            <!-- 옵션 2: 로컬 MP4 (비활성화 - GitHub Pages에서 대용량 파일 문제) -->
+            <!--
             <video controls class="w-full max-w-4xl mx-auto aspect-video rounded-lg shadow-2xl bg-black">
                 <source src="images/도커_제컴퓨터에선_잘되는데요_탈출기.mp4" type="video/mp4">
                 브라우저가 비디오 태그를 지원하지 않습니다.
             </video>
+            -->
+            
+            <!-- 옵션 3: 이미지로 대체 (비활성화 - 동영상으로 표시) -->
+            <!--
+            <div class="bg-white p-8 rounded-lg shadow-2xl max-w-3xl mx-auto">
+                <div class="bg-red-50 border-l-4 border-red-500 p-6 mb-6">
+                    <h3 class="text-2xl font-bold text-red-700 mb-2">😱 흔한 개발자의 고민</h3>
+                    <p class="text-lg text-red-600">"제 PC에선 잘 되는데요..."</p>
+                </div>
+                <div class="space-y-4 text-left">
+                    <div class="bg-gray-100 p-4 rounded">
+                        <p class="font-bold mb-2">개발자의 컴퓨터:</p>
+                        <p class="text-green-600">✅ Python 3.9, Node.js 16, 특정 라이브러리 설치됨</p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded">
+                        <p class="font-bold mb-2">서버/동료의 컴퓨터:</p>
+                        <p class="text-red-600">❌ Python 3.7, Node.js 12, 라이브러리 버전 다름</p>
+                    </div>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mt-4">
+                        <p class="font-bold text-yellow-700">결과: 실행 실패! 😭</p>
+                    </div>
+                </div>
+            </div>
+            -->
         </div>
     </div>
 
