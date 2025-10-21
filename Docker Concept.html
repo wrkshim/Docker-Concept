@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐋 도커(Docker) 첫걸음</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            overflow: hidden;
+        }
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background-color: #2563eb;
+            width: 0;
+            z-index: 20;
+            transition: width 0.3s ease-out;
+        }
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: flex; /* Use flex by default */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem;
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out, visibility 0.5s;
+        }
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .slide-content {
+            max-width: 1000px;
+            width: 100%;
+        }
+        .nav-button {
+            position: fixed;
+            bottom: 2rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            cursor: pointer;
+            z-index: 10;
+            transition: background-color 0.3s, opacity 0.3s;
+        }
+        .nav-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        #prevBtn {
+            left: 2rem;
+        }
+        #nextBtn {
+            right: 2rem;
+        }
+        code {
+            font-family: 'D2Coding', 'Courier New', monospace;
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.3rem;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #1a202c;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: left;
+            margin-top: 1rem;
+            position: relative;
+            overflow-x: auto;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #4a5568;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        .copy-btn:hover {
+            background-color: #718096;
+        }
+        .slide-counter {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background-color: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+        /* Slide background colors for variety */
+        .slide:nth-child(4n+1) { background-color: #f7fafc; }
+        .slide:nth-child(4n+2) { background-color: #e2e8f0; }
+        .slide:nth-child(4n+3) { background-color: #edf2f7; }
+        .slide:nth-child(4n+4) { background-color: #f7fafc; }
+
+        .icon { width: 4rem; height: 4rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div id="progress-bar"></div>
+
+    <!-- Slide 1: Title -->
+    <div class="slide active">
+        <div class="slide-content">
+            <svg class="icon mx-auto" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.39961 14.3092L2.39961 9.69081C2.39961 8.5836 3.02875 7.57039 4.02052 7.01682L7.97839 4.70763C9.01235 4.13185 10.2872 4.13185 11.3212 4.70763L15.279 7.01682C16.2708 7.57039 16.8999 8.5836 16.8999 9.69081V14.3092C16.8999 15.4164 16.2708 16.4296 15.279 16.9832L11.3212 19.2924C10.2872 19.8682 9.01235 19.8682 7.97839 19.2924L4.02052 16.9832C3.02875 16.4296 2.39961 15.4164 2.39961 14.3092Z" stroke="#2563eb" stroke-width="1.5"></path><path d="M8.01953 8.35913H15.9095" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"></path><path d="M5.44922 6.64087H13.3392" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"></path><path d="M19.3496 15.3591H21.5996" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"></path><path d="M19.3496 12.3591H21.5996" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"></path><path d="M19.3496 9.35913H21.5996" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round"></path></svg>
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 text-blue-600 text-center">도커(Docker) 첫걸음</h1>
+            <p class="text-xl md:text-2xl text-gray-600">내 노트북에서 서버까지, 똑같은 환경을 선물하세요</p>
+        </div>
+    </div>
+
+    <!-- Slide 2: Table of Contents -->
+    <div class="slide">
+        <div class="slide-content transform scale-[0.8]">
+            <h2 class="text-4xl md:text-5xl font-bold mb-12 text-center text-blue-600">📋 차례</h2>
+            <div class="max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 text-left">
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-blue-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-blue-600 mr-4">01</span>
+                            <h3 class="text-xl font-semibold">"어? 제 컴퓨터에서는 문제 없이 잘 돌아가는데? 뭐지!"</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-blue-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-blue-600 mr-4">02</span>
+                            <h3 class="text-xl font-semibold">이런 문제, 겪어보셨나요? 🤔</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-green-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-green-600 mr-4">03</span>
+                            <h3 class="text-xl font-semibold">그래서 '도커'가 뭔가요? 💡</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-green-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-green-600 mr-4">04</span>
+                            <h3 class="text-xl font-semibold">도커의 3가지 핵심 요소</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-purple-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-purple-600 mr-4">05</span>
+                            <h3 class="text-xl font-semibold">도커 이미지와 컨테이너의 관계</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-purple-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-purple-600 mr-4">06</span>
+                            <h3 class="text-xl font-semibold">도커 이용 웹서버 구성하기</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-yellow-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-yellow-600 mr-4">07</span>
+                            <h3 class="text-xl font-semibold">'나만의 이미지'는 어떻게 만드나요? 📝</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-yellow-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-yellow-600 mr-4">08</span>
+                            <h3 class="text-xl font-semibold">Docker Compose: 명령어 하나로 전체 앱 실행 🚀</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-red-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-red-600 mr-4">09</span>
+                            <h3 class="text-xl font-semibold">더 큰 규모로 나아가기: 컨테이너 오케스트레이션 🎶</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-red-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-red-600 mr-4">10</span>
+                            <h3 class="text-xl font-semibold">쿠버네티스 아키텍처 🏗️</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-indigo-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-indigo-600 mr-4">11</span>
+                            <h3 class="text-xl font-semibold">정리: 도커를 쓰면 뭐가 좋은가요?</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4 border-indigo-500">
+                        <div class="flex items-center">
+                            <span class="text-2xl font-bold text-indigo-600 mr-4">12</span>
+                            <h3 class="text-xl font-semibold">Q & A</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Embedded Video -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8 text-center whitespace-nowrap">"어? 제 컴퓨터에서는 문제 없이 잘 돌아가는데? 뭐지!"</h2>
+            <video controls class="w-full max-w-4xl mx-auto aspect-video rounded-lg shadow-2xl bg-black">
+                <source src="../도커_제컴퓨터에선_잘되는데요_탈출기.mp4" type="video/mp4">
+                브라우저가 비디오 태그를 지원하지 않습니다.
+            </video>
+        </div>
+    </div>
+
+    <!-- Slide 4: The Problem -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-center">이런 문제, 겪어보셨나요? 🤔</h2>
+            <div class="grid md:grid-cols-3 gap-8 text-left">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">😭 "내 PC에선 잘 되는데..."</h3>
+                    <p>개발 환경과 실제 서버 환경이 달라 발생하는 끝없는 오류들</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">⏳ "설치만 반나절"</h3>
+                    <p>새 프로젝트를 위한 프로그램(DB, 웹서버 등) 설치와 설정의 반복</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold mb-2">💥 "충돌이 무서워요"</h3>
+                    <p>프로젝트별로 다른 프로그램 버전이 필요할 때의 난감함</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: What is Docker? -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 text-center">그래서 '도커'가 뭔가요? 💡</h2>
+            <p class="text-xl md:text-2xl mb-8">
+                '컨테이너'라는 격리된 공간에 프로그램을<br/>
+                <span class="font-bold text-blue-600">필요한 모든 것과 함께 담아두는 기술</span>입니다.
+            </p>
+            <div class="bg-white p-8 rounded-lg shadow-2xl">
+                <h3 class="text-2xl font-bold mb-4">🚢 핵심 비유: 선박 컨테이너</h3>
+                <p class="text-lg">내용물이 뭐든 상관없이 규격화된 컨테이너에 담아 옮기면, 어느 항구(서버)에서든 똑같이 내리고 쓸 수 있습니다. 내 코드를 설정, 라이브러리와 함께 '도커 컨테이너'에 담으면, <span class="font-bold">어디서나 똑같이 실행</span>됩니다!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: Core Concepts -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-center">도커의 3가지 핵심 요소</h2>
+            <div class="grid md:grid-cols-3 gap-8 text-left">
+                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform">
+                    <h3 class="text-2xl font-bold mb-2">📜 이미지 (Image)</h3>
+                    <p class="font-bold text-blue-600">'설계도' 또는 '레시피'</p>
+                    <p>컨테이너를 만드는 데 필요한 모든 정보가 담긴 파일. 이 설계도로 똑같은 컨테이너를 계속 찍어낼 수 있습니다.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform">
+                    <h3 class="text-2xl font-bold mb-2">📦 컨테이너 (Container)</h3>
+                    <p class="font-bold text-blue-600">'살아있는 프로그램'</p>
+                    <p>이미지(설계도)를 바탕으로 실제 메모리에서 실행되는 상태. 컴퓨터 안의 독립된 작은 컴퓨터입니다.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform">
+                    <h3 class="text-2xl font-bold mb-2">🏪 도커 허브 (Docker Hub)</h3>
+                    <p class="font-bold text-blue-600">'이미지 앱스토어'</p>
+                </div>
+            </div>
+            <p class="mt-8 text-lg bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-lg text-left">
+                <strong>💡 Tip:</strong> vscode와 같은 IDE에서 <strong>도커 Plugin</strong>(도커 관리 및 설정 코드 자동 완성)의 도움을 받아 <strong>Dockerfile</strong>이라는 설정 파일을 쉽게 완성할 수 있고, 이것을 이용하면 어렵지 않게 <strong>도커 이미지(설계도)</strong>로 빌드(변환), 실행 및 공유할 수 있다.
+            </p>
+        </div>
+    </div>
+
+    <!-- Slide 7: Image to Container Relationship -->
+            <div class="slide">
+                <div class="slide-content transform scale-90">
+                    <h2 class="text-4xl md:text-5xl font-bold mb-4 text-center">도커 이미지와 컨테이너의 관계</h2>
+                    <p class="text-xl md:text-2xl mb-4">이미지는 '설계도', 컨테이너는 '실행된 모습'입니다.</p>                    <div class="flex flex-col items-center gap-4">
+                        <div class="relative transform scale-x-[1.3]">
+                            <img src="../도커%20컨테이너%20이미지.png" alt="Docker Image and Container Relationship" class="rounded-lg shadow-2xl max-w-4xl w-full">
+                            <div class="absolute bg-sky-600 text-white text-base font-bold py-2 px-4 rounded-lg shadow-lg" style="top: 90%; left: 15%; transform: translateX(-50%);">
+                                도커 Host
+                            </div>
+                            <div class="absolute bg-indigo-600 text-white text-base font-bold py-2 px-4 rounded-lg shadow-lg" style="top: 2%; left: 70%; transform: translateX(-50%) scale(0.9);">
+                                도커 Hub
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-center gap-4">
+                            <h3 class="text-2xl font-bold flex-shrink-0">도커<br>엔진</h3>
+                            <img src="../도커%20엔진.png" alt="Docker Commands" class="rounded-lg shadow-2xl max-w-3xl w-full transform scale-90">
+                        </div>
+                    </div>        </div>
+    </div>
+
+    <!-- Slide 8: Live Demo Steps -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 text-center">도커 이용 웹서버 구성하기</h2>
+            <div class="space-y-6 text-left max-w-3xl mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-2">1단계: 웹서버 실행</h3>
+                    <p>아파치 웹서버 컨테이너를 'my-web' 이름으로 실행합니다.</p>
+                    <pre><code class="language-bash">docker run -d --name my-web -p 8080:80 httpd</code><button class="copy-btn">복사</button></pre>
+                    <p class="mt-2 text-sm">이제 브라우저에서 <a href="http://localhost:8080/index.html" target="_blank" class="text-blue-600 underline">localhost:8080/index.html</a>으로 접속해 "It works!"를 확인하세요.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-2">2단계: 컨테이너 접속</h3>
+                    <p>'my-web' 컨테이너의 터미널(bash)로 접속합니다. (<code>-it</code> 옵션으로 상호작용 가능하게!)</p>
+                    <pre><code class="language-bash">docker exec -it my-web bash</code><button class="copy-btn">복사</button></pre>
+                    <p class="mt-2 text-sm">이제 여러분의 터미널은 컨테이너 '안'입니다!</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold mb-2">3단계: 파일 수정</h3>
+                    <p>웹페이지 내용을 "Hello Docker!"로 변경하는 간단한 예입니다.( 2단계에서 컨테이너에 접속한 터미널에서 아래 명령을 실행합니다.)</p>
+                    <pre><code class="language-bash">echo "Hello Docker!" > /usr/local/apache2/htdocs/index.html</code><button class="copy-btn">복사</button></pre>
+                    <p class="mt-2 text-sm">브라우저를 새로고침해서 변경된 내용을 확인하고, <code>exit</code>으로 빠져나오세요.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: NEW - Dockerfile -->
+    <div class="slide">
+        <div class="slide-content transform scale-[0.8]">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6 text-center">'나만의 이미지'는 어떻게 만드나요? 📝</h2>
+            <p class="text-xl md:text-2xl mb-4">
+                <code>Dockerfile</code>: 나만의 이미지를 만드는 레시피 북
+            </p>
+            <div class="text-left bg-white p-8 rounded-lg shadow-xl max-w-4xl mx-auto">
+                <p class="mb-4 text-lg"><code>Dockerfile</code>은 이미지를 만들기 위한 명령어들의 목록입니다. 이 파일을 만들어 두면, 언제 어디서든 똑같은 환경의 이미지를 생성할 수 있습니다.</p>
+                
+                <p class="font-bold text-lg">1단계: 간단한 웹서버 Dockerfile 예시</p>
+                <pre><code class="language-dockerfile"># 1. Nginx 웹서버 이미지를 기반으로 시작합니다.
+FROM nginx:alpine
+
+# 2. 현재 폴더의 모든 발표 자료 파일들을 웹서버의 기본 폴더로 복사합니다.
+COPY . /usr/share/nginx/html
+
+# 3. 80번 포트를 외부에 노출합니다.
+EXPOSE 80
+</code><button class="copy-btn">복사</button></pre>
+                <p class="mt-2 text-lg">이 세 줄만으로, 발표 자료 전체를 포함하는 웹서버 이미지가 완성됩니다!</p>
+                
+                <div class="mt-4 pt-4 border-t-2 border-gray-200">
+                    <p class="font-bold text-lg mb-2">2단계: 도커 이미지 빌드</p>
+                    <p class="text-base mb-2">터미널을 오픈하여 아래 명령어를 실행하면 <code>my-presentation</code>이라는 이름의 도커 이미지를 생성합니다.</p>
+                    <pre><code class="language-bash">docker build -t my-presentation .</code><button class="copy-btn">복사</button></pre>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t-2 border-gray-200">
+                    <p class="font-bold text-lg mb-2">3단계: 도커 이미지 실행</p>
+                    <p class="text-base mb-2">아래 명령어로 방금 만든 이미지를 컨테이너로 실행합니다.</p>
+                    <pre><code class="language-bash">docker run -d --name presentation-server -p 8080:80 my-presentation</code><button class="copy-btn">복사</button></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 10: Docker Compose -->
+    <div class="slide" style="background-image: linear-gradient(rgba(226, 232, 240, 0.95), rgba(226, 232, 240, 0.95)), url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgNDUwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWRmMmY3Ii8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTAgMjUpIj48cmVjdCB4PSIzMDAiIHk9IjE1MCIgd2lkdGg9IjE1MCIgaGVpZ2h0PSI5MCIgcng9IjEwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiM3MTgwOTYiIHN0cm9rZS13aWR0aD0iMyIvPjx0ZXh0IHg9IjM3NSIgeT0iMTg1IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMmQzNzQ4Ij5kb2NrZXItPC90ZXh0Pjx0ZXh0IHg9IjM3NSIgeT0iMjA1IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMmQzNzQ4Ij5jb21wb3NlLnltbDwvdGV4dD48ZyBmaWxsPSIjZmZmIj48cmVjdCB4PSI1MCIgeT0iNTAiIHdpZHRoPSIxNDAiIGhlaWdodD0iODAiIHJ4PSI4IiBmaWxsPSIjNDI5OWUxIi8+PHRleHQgeD0iMTIwIiB5PSI5NSIgZm9udC1mYW1pbHk9InNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPldlYiBBcHA8L3RleHQ+PHJlY3QgeD0iNTUwIiB5PSI1MCIgd2lkdGg9IjE0MCIgaGVpZ2h0PSI4MCIgcng9IjgiIGZpbGw9IiM0OGJiNzgiLz48dGV4dCB4PSI2MjAiIHk9Ijk1IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSI+RGF0YWJhc2U8L3RleHQ+PHJlY3QgeD0iNTUwIiB5PSIyNjAiIHdpZHRoPSIxNDAiIGhlaWdodD0iODAiIHJ4PSI4IiBmaWxsPSIjZWQ4OTM2Ii8+PHRleHQgeD0iNjIwIiB5PSIzMDUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMmQzNzQ4Ij5BUEk8L3RleHQ+PC9nPg=='); background-size: contain; background-repeat: no-repeat; background-position: center;">
+        <div class="slide-content" style="max-width: 1400px;">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 whitespace-nowrap text-center">Docker Compose: 명령어 하나로 전체 앱 실행 🚀</h2>
+            <div class="grid gap-8 mx-auto" style="grid-template-columns: 35fr 65fr;">
+                <!-- Left Column: Description -->
+                <div class="bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-lg text-left">
+                    <h3 class="text-2xl font-bold mb-4">무엇인가요?</h3>
+                    <p class="text-lg">웹 서버, 데이터베이스처럼 여러 컨테이너를 '하나의 서비스'로 묶어, <strong>명령어 하나로 동시에 실행하고 관리</strong>하게 해주는 도구입니다.</p>
+                    <p class="mt-4 text-lg"><code>docker-compose.yml</code> 파일을 사용하여 서비스, 네트워크, 볼륨을 간단히 정의할 수 있습니다.</p>
+                    
+                    <h3 class="text-2xl font-bold mb-4 mt-6">주요 명령어</h3>
+                    <pre class="!text-base !p-3"><code class="language-bash"># 모든 서비스 시작 (백그라운드)
+docker-compose up -d
+
+# 모든 서비스 중지 및 컨테이너 삭제
+docker-compose down</code></pre>
+                </div>
+
+                <!-- Right Column: YAML Example -->
+                <div class="bg-gray-800/90 backdrop-blur-sm p-4 rounded-lg shadow-lg text-left text-sm">
+                     <h3 class="text-xl font-bold mb-2 text-white">예시: <code>docker-compose.yml</code></h3>
+                    <pre class="!p-0 !bg-transparent"><code class="language-yaml">services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - MYSQL_DATABASE=mydb
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_HOST=db
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: Kubernetes -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 whitespace-nowrap text-center">더 큰 규모로 나아가기: 컨테이너 오케스트레이션 🎶</h2>
+            <div class="bg-white p-8 rounded-lg shadow-lg text-left max-w-4xl mx-auto">
+                <h3 class="text-3xl font-bold mb-4">수많은 컴퓨터, 수많은 컨테이너?<br/>→ <code>Kubernetes</code> (k8s)</h3>
+                <p class="text-xl mb-6">수십, 수백 대의 컴퓨터(클러스터)에 컨테이너들을 알아서 배치하고, 문제가 생긴 컨테이너는 <strong>자동으로 되살려주는 '총사령관'</strong>입니다.</p>
+                
+                <h4 class="text-2xl font-bold mb-4 text-blue-600">🔑 쿠버네티스 핵심 기능</h4>
+                <div class="space-y-3">
+                    <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                        <h5 class="font-bold text-lg mb-1">1. 자동 복구 및 탄력적 확장</h5>
+                        <p class="text-gray-700">자가 치유/오토스케일링</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                        <h5 class="font-bold text-lg mb-1">2. 무중단 배포 및 롤백</h5>
+                        <p class="text-gray-700">롤링 업데이트/롤백</p>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                        <h5 class="font-bold text-lg mb-1">3. 자동화된 네트워킹</h5>
+                        <p class="text-gray-700">서비스 디스커버리 및 로드 밸런싱</p>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
+                        <h5 class="font-bold text-lg mb-1">4. 높은 이식성</h5>
+                        <p class="text-gray-700">AWS/GCP 어디서나 동일하게</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 12: Kubernetes Architecture -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-center">쿠버네티스 아키텍처 🏗️</h2>
+            <p class="text-xl md:text-2xl">마스터 노드가 워커 노드들을 지휘하는 구조입니다.</p>
+            <div class="flex justify-center items-center">
+                <img src="../쿠버네티스%20마스터%20pod.png" alt="Kubernetes Master Pod" class="rounded-lg shadow-2xl max-w-2xl w-full">
+            </div>
+            
+            <!-- Architecture Details -->
+            <div class="bg-white p-6 rounded-lg shadow-xl text-left max-w-6xl mx-auto" style="transform: scaleX(1.2);">
+                <div class="space-y-6">
+                    <!-- Master Node -->
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4 text-blue-600">1. 🧠 마스터 노드 (Control Plane) - 관제탑</h3>
+                        <div class="grid md:grid-cols-2 gap-3">
+                            <div class="bg-blue-50 p-3 rounded">
+                                <h4 class="font-bold text-blue-700 mb-1">API 서버 (kube-api-server)</h4>
+                                <p class="text-sm">'총괄 매니저' (API 서버를 통해서만 명령/상태 관리)</p>
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded">
+                                <h4 class="font-bold text-blue-700 mb-1">etcd (et-see-dee)</h4>
+                                <p class="text-sm">'원하는 상태(Desired State)'와 '실제 상태(Current State)'를 모두 기록 관리 '데이터베이스'</p>
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded">
+                                <h4 class="font-bold text-blue-700 mb-1">스케줄러 (kube-scheduler)</h4>
+                                <p class="text-sm">역할: '배차 담당자'</p>
+                            </div>
+                            <div class="bg-blue-50 p-3 rounded">
+                                <h4 class="font-bold text-blue-700 mb-1">컨트롤러 매니저 (kube-controller-manager)</h4>
+                                <p class="text-sm">etcd의 '원하는 상태'와 '실제 상태'를 끊임없이 비교하는 역할</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Worker Node -->
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4 text-green-600">2. 🏃 워커 노드 (Worker Nodes) - 부두</h3>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div class="bg-green-50 p-3 rounded">
+                                <h4 class="font-bold text-green-700 mb-1">파드 (Pod)</h4>
+                                <p class="text-sm">컨테이너를 담는 '표준 규격 상자'</p>
+                            </div>
+                            <div class="bg-green-50 p-3 rounded">
+                                <h4 class="font-bold text-green-700 mb-1">Kubelet (큐블릿)</h4>
+                                <p class="text-sm">실제로 컨테이너를 실행하고 관리</p>
+                            </div>
+                            <div class="bg-green-50 p-3 rounded">
+                                <h4 class="font-bold text-green-700 mb-1">Kube-proxy (큐브-프록시)</h4>
+                                <p class="text-sm">네트워크 경로(길)를 만들고 관리</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 13: Summary -->
+    <div class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold mb-8 text-center">정리: 도커를 쓰면 뭐가 좋은가요?</h2>
+            <div class="grid md:grid-cols-3 gap-8 text-left">
+                <div class="bg-white p-6 rounded-lg shadow-xl border-t-4 border-blue-500">
+                    <h3 class="text-xl font-bold mb-2">🌐 표준화 & 이식성</h3>
+                    <p>"어디서든 똑같이!" 실행되어 "제 PC에선 됐는데..." 라는 말이 사라집니다.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl border-t-4 border-green-500">
+                    <h3 class="text-xl font-bold mb-2">⚡ 효율성</h3>
+                    <p>"빠르고 가볍게!" 동작하여 무거운 가상머신(VM)보다 훨씬 효율적입니다.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl border-t-4 border-yellow-500">
+                    <h3 class="text-xl font-bold mb-2">🛡️ 격리</h3>
+                    <p>"서로 간섭 없이!" 컨테이너들이 완벽히 격리되어 안정성이 높아집니다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 14: Q&A -->
+    <div class="slide">
+        <div class="slide-content">
+            <h1 class="text-6xl font-bold mb-4 text-center">Q & A</h1>
+            <p class="text-3xl text-gray-700">감사합니다</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <button id="prevBtn" class="nav-button">이전</button>
+    <button id="nextBtn" class="nav-button">다음</button>
+    <div id="slideCounter" class="slide-counter"></div>
+
+<script>
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const slideCounter = document.getElementById('slideCounter');
+    const copyButtons = document.querySelectorAll('.copy-btn');
+    const progressBar = document.getElementById('progress-bar');
+
+    let currentSlide = 0;
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            if (i === index) {
+                slide.classList.add('active');
+            } else {
+                if (slide.classList.contains('active')) {
+                    const video = slide.querySelector('video');
+                    if (video) {
+                        video.pause();
+                    }
+                }
+                slide.classList.remove('active');
+            }
+        });
+        updateNav();
+    }
+
+    function updateNav() {
+        // Update progress bar
+        const progress = ((currentSlide + 1) / slides.length) * 100;
+        progressBar.style.width = `${progress}%`;
+
+        // Update buttons and counter
+        prevBtn.style.opacity = currentSlide === 0 ? '0' : '1';
+        prevBtn.style.pointerEvents = currentSlide === 0 ? 'none' : 'auto';
+        nextBtn.style.opacity = currentSlide === slides.length - 1 ? '0' : '1';
+        nextBtn.style.pointerEvents = currentSlide === slides.length - 1 ? 'none' : 'auto';
+        slideCounter.textContent = `${currentSlide + 1} / ${slides.length}`;
+    }
+
+    function goToNextSlide() {
+        if (currentSlide < slides.length - 1) {
+            currentSlide++;
+            showSlide(currentSlide);
+        }
+    }
+
+    function goToPrevSlide() {
+        if (currentSlide > 0) {
+            currentSlide--;
+            showSlide(currentSlide);
+        }
+    }
+
+    nextBtn.addEventListener('click', goToNextSlide);
+    prevBtn.addEventListener('click', goToPrevSlide);
+
+    document.addEventListener('keydown', (e) => {
+        // 다음 슬라이드로 이동: 오른쪽 화살표, 스페이스바, PageDown, Enter, 아래 화살표
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown' || e.key === 'Enter' || e.key === 'ArrowDown') {
+            e.preventDefault(); // Prevent default scrolling behavior
+            goToNextSlide();
+        } 
+        // 이전 슬라이드로 이동: 왼쪽 화살표, PageUp, 위 화살표
+        else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            goToPrevSlide();
+        }
+        // ESC 키로 첫 슬라이드로 이동 (선택사항)
+        else if (e.key === 'Escape') {
+            e.preventDefault();
+            currentSlide = 0;
+            showSlide(currentSlide);
+        }
+        // Home 키로 첫 슬라이드로, End 키로 마지막 슬라이드로 (선택사항)
+        else if (e.key === 'Home') {
+            e.preventDefault();
+            currentSlide = 0;
+            showSlide(currentSlide);
+        }
+        else if (e.key === 'End') {
+            e.preventDefault();
+            currentSlide = slides.length - 1;
+            showSlide(currentSlide);
+        }
+    });
+
+    copyButtons.forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const pre = e.target.parentElement;
+            const code = pre.querySelector('code');
+            const textToCopy = code.innerText;
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                e.target.textContent = '복사됨!';
+            } catch (err) {
+                console.error('Copy failed', err);
+                e.target.textContent = '실패';
+            } finally {
+                setTimeout(() => {
+                    e.target.textContent = '복사';
+                }, 2000);
+            }
+        });
+    });
+
+    // Initial setup
+    showSlide(currentSlide);
+</script>
+
+</body>
+</html>
